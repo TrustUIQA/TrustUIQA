@@ -34,6 +34,10 @@ Cite the original papers of UIEB, SAUD, SAUD2.0, UID2021 and SOTA when you use t
 
 `uwrepos/` holds the metric code from other authors that we ran, unchanged, with each repository's LICENSE where its authors gave one. Files over 50 MB and PyTorch checkpoints (`.pth`, `.pt`, `.ckpt`, `.safetensors`, `.bin`) are not included. Get them from the original repositories.
 
+## License
+
+Our code (everything outside `uwrepos/`) is released under the MIT License, see `LICENSE`. Each folder in `uwrepos/` keeps the terms of its original authors. The data on Hugging Face has its own license, see its dataset card.
+
 ## Contact
 
 trustuiqa@gmail.com
