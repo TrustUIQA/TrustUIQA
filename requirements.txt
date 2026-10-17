@@ -1,0 +1,11 @@
+# Python 3.12; exact versions the paper's numbers were produced with (torch built for CUDA 12.8)
+torch==2.11.0
+pyiqa==0.1.16
+opencv-python==5.0.0.93
+numpy==2.5.2
+pandas==3.0.6
+scipy==1.18.1
+matplotlib==3.11.2
+pillow==12.3.0
+pyarrow==25.0.1
+tqdm==4.70.1

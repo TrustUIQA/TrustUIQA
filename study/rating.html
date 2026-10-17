@@ -1,0 +1,290 @@
+<title>Underwater Image Rating</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one centred reading column for consent and instructions; the rating stage is a full-screen
+   neutral-grey surround (as in ITU-R BT.500 viewing setups) so page colour never biases colour judgements. */
+:root {
+  --bg: #f3f5f6; --surface: #ffffff; --fg: #15202b; --muted: #556270; --line: #d5dce2;
+  --accent: #1d5f8a; --accent-fg: #ffffff; --warn: #9a5b00; --ok: #23704a;
+  --stage: #808080; --stage-fg: #141414; --stage-line: #5c5c5c;
+  --body: "Atkinson Hyperlegible", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11171c; --surface: #18212a; --fg: #e4eaef; --muted: #9aa8b5; --line: #2a3640;
+  --accent: #6fb3e0; --accent-fg: #0b1620; --warn: #e0a54a; --ok: #6fcf9c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11171c; --surface: #18212a; --fg: #e4eaef; --muted: #9aa8b5; --line: #2a3640;
+  --accent: #6fb3e0; --accent-fg: #0b1620; --warn: #e0a54a; --ok: #6fcf9c; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); }
+.page { max-width: 640px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; display: grid; gap: 22px; }
+h1 { font-size: 1.75rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.1rem; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font: 500 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: grid; gap: 14px; }
+label.field { display: grid; gap: 4px; font-weight: 700; font-size: .95rem; }
+select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+label.check { display: flex; gap: 10px; align-items: flex-start; font-size: .95rem; }
+label.check input { margin-top: 5px; width: 18px; height: 18px; flex: none; }
+.btn { font: 700 1rem var(--body); padding: 12px 22px; border-radius: 6px; border: 0; background: var(--accent); color: var(--accent-fg); cursor: pointer; justify-self: start; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.note { font-size: .9rem; color: var(--warn); }
+.ok { color: var(--ok); font-weight: 700; }
+textarea { width: 100%; min-height: 110px; font: .75rem/1.4 var(--mono); padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); box-sizing: border-box; word-break: break-all; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* rating stage: deliberately fixed mid-grey in both themes */
+.stage { position: fixed; inset: 0; background: var(--stage); color: var(--stage-fg); display: grid; grid-template-rows: auto 1fr auto;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(14px + env(safe-area-inset-bottom, 0px)); gap: 12px; z-index: 5; }
+.stage-top { display: flex; align-items: center; gap: 14px; font: 500 .85rem var(--mono); }
+.pbar { flex: 1; height: 6px; background: var(--stage-line); border-radius: 3px; overflow: hidden; }
+.pbar i { display: block; height: 100%; width: 0; background: var(--stage-fg); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; justify-items: center; min-height: 0; }
+.side { all: unset; cursor: pointer; display: grid; gap: 8px; justify-items: center; min-width: 0; max-width: 100%; border-radius: 4px; }
+.side canvas { display: block; max-width: 100%; max-height: calc(100vh - 150px); width: auto; height: auto; outline: 2px solid transparent; outline-offset: 4px; }
+.side:hover canvas, .side:focus-visible canvas { outline-color: var(--stage-fg); }
+.side.picked canvas { outline: 4px solid var(--stage-fg); }
+.side span { font: 500 .85rem var(--mono); }
+.blank .pair { visibility: hidden; }
+.hint { text-align: center; font-size: .9rem; }
+@media (max-width: 720px) { .pair { grid-template-columns: 1fr; gap: 14px; } .side canvas { max-height: 38vh; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main class="page" id="intro">
+  <div>
+    <p class="eyebrow">Image quality study · about 12 minutes</p>
+    <h1>Which underwater photo looks better?</h1>
+  </div>
+  <p>You will see about 110 pairs of underwater photos. In each pair, both images show the same scene. Pick the one with better overall quality.</p>
+  <p class="note" id="narrow" hidden>This screen is narrow. Please use a laptop or desktop if you can; small screens hide the differences we are studying.</p>
+  <section class="card">
+    <h2>How to rate</h2>
+    <ol class="steps">
+      <li>Use a laptop or desktop screen at normal brightness. Turn off night mode or blue-light filters. Do not zoom.</li>
+      <li>Click the image with better overall quality, or press <b>←</b> for left and <b>→</b> for right.</li>
+      <li>Go with your first impression. Three to five seconds per pair is enough.</li>
+      <li>You must pick one. If they look the same to you, pick either.</li>
+      <li>Judge image quality only, not which scene you like more.</li>
+      <li>There is a short break halfway. There are no right answers.</li>
+    </ol>
+  </section>
+  <form class="card" id="form">
+    <h2>About you</h2>
+    <label class="field">Age range
+      <select id="age" required><option value="">Choose</option><option>18–24</option><option>25–34</option><option>35–44</option><option>45+</option></select></label>
+    <label class="field">Screen you are using
+      <select id="screen" required><option value="">Choose</option><option>Laptop</option><option>Desktop monitor</option><option>Tablet</option><option>Phone</option></select></label>
+    <label class="field">Experience with image quality or photo editing
+      <select id="expertise" required><option value="">Choose</option><option value="none">None</option><option value="hobby">Hobby photography or editing</option><option value="expert">I work with images professionally or in research</option></select></label>
+    <label class="check"><input type="checkbox" id="vision" required> I have normal or corrected-to-normal vision and no known colour vision deficiency.</label>
+    <label class="check"><input type="checkbox" id="consent" required> I agree to take part. I understand that my choices, response times, screen size and the answers above are recorded without my name, and that I can stop at any time by closing this page.</label>
+    <button class="btn" id="start" type="submit" disabled>Start with 2 practice pairs</button>
+    <p class="muted" id="loading">Loading images…</p>
+  </form>
+  <p class="muted" id="owner" hidden>You own this study. Send each rater a link ending in <b>#b1</b>, <b>#b2</b>, <b>#b3</b> or <b>#b4</b>, cycling through them, so every pair gets rated evenly. A link without an ending picks a set at random.</p>
+</main>
+
+<main class="page" id="msg" hidden>
+  <h1 id="msgTitle"></h1>
+  <p id="msgText"></p>
+  <button class="btn" id="msgBtn" type="button"></button>
+</main>
+
+<main class="page" id="done" hidden>
+  <p class="eyebrow">Finished</p>
+  <h1>Thank you</h1>
+  <p id="saveState" class="muted">Saving your answers…</p>
+  <section class="card" id="codeCard">
+    <h2 id="codeTitle">Backup response code</h2>
+    <p class="muted" id="codeHelp">If the study team asks for it, copy this code and send it to them.</p>
+    <textarea id="code" readonly aria-label="Response code"></textarea>
+    <div class="row"><button class="btn ghost" id="copy" type="button">Copy code</button><span id="copied" class="muted" aria-live="polite"></span></div>
+  </section>
+</main>
+
+<section class="stage" id="stage" hidden aria-live="off">
+  <div class="stage-top"><span id="prog"></span><div class="pbar"><i id="bar"></i></div><span id="phase"></span></div>
+  <div class="pair">
+    <button class="side" id="L" type="button" aria-label="Left image is better"><canvas></canvas><span>← Left</span></button>
+    <button class="side" id="R" type="button" aria-label="Right image is better"><canvas></canvas><span>Right →</span></button>
+  </div>
+  <p class="hint">Click the image with better overall quality, or press ← / →</p>
+</section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const show = (id) => ["intro", "msg", "done", "stage"].forEach((s) => ($(s).hidden = s !== id));
+const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const runId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9-]/g, "");
+const hashBlock = /^#b([1-4])$/.exec(location.hash);
+const block = hashBlock ? Number(hashBlock[1]) - 1 : Math.floor(Math.random() * 4);
+
+let M = null;
+const sprites = new Map();
+function sprite(id) {
+  if (!sprites.has(id)) sprites.set(id, new Promise((ok, fail) => {
+    const im = new Image(); im.onload = () => ok(im); im.onerror = fail; im.src = `stimuli/${id}.jpg`;
+  }));
+  return sprites.get(id);
+}
+const info = (id) => M.study.find((s) => s.id === id) || M.practice.find((s) => s.id === id);
+
+async function draw(canvas, id, tile) {
+  const im = await sprite(id), s = info(id);
+  canvas.width = s.w; canvas.height = s.h;
+  canvas.getContext("2d").drawImage(im, 0, tile * s.hp, s.w, s.h, 0, 0, s.w, s.h);
+}
+
+// ---- trial list: block = 1/4 of all image x condition pairs, plus attention checks and repeats
+function buildTrials() {
+  const t = [];
+  M.study.forEach((im, i) => M.conds.forEach((c, j) => { if ((i + j) % 4 === block) t.push({ k: "t", img: im.id, c }); }));
+  shuffle(M.study.slice()).slice(0, 6).forEach((im) => t.push({ k: "g", img: im.id, c: "blur_strong" }));
+  shuffle(M.study.slice()).slice(0, 4).forEach((im) => t.push({ k: "i", img: im.id, c: "clean" }));
+  shuffle(t).forEach((x) => (x.cl = Math.random() < 0.5));  // cl: clean image shown on the left
+  const early = t.slice(0, Math.floor(t.length * 0.55)).filter((x) => x.k === "t");
+  shuffle(early).slice(0, 5).forEach((x) => {
+    const pos = Math.floor(t.length * 0.6) + Math.floor(Math.random() * (t.length * 0.4));
+    t.splice(pos, 0, { k: "r", img: x.img, c: x.c, cl: !x.cl });
+  });
+  return t;
+}
+
+// ---- saving: db when this viewer may write, response code always
+let dbRef = null, saveChain = Promise.resolve(), saved = false, created = false;
+const record = { v: 1, run: runId, block, startedAt: null, finishedAt: null, meta: {}, display: {}, votes: [] };
+async function initDb() {
+  try {
+    if (!window.claude?.use) return;
+    const user = await claude.use("user");
+    if (user && (await user.isOwner())) $("owner").hidden = false;
+    const uid = user && (await user.id());
+    const db = uid && (await claude.use("db"));
+    if (db) dbRef = db.collection("sessions/" + uid + "/runs").doc(runId);
+  } catch { dbRef = null; }
+}
+function save(final) {
+  if (!dbRef) return saveChain;
+  const body = JSON.parse(JSON.stringify(record));
+  body.status = final ? "complete" : "in_progress";
+  saveChain = saveChain.then(async () => {
+    if (!dbRef) return;
+    try { await (created ? dbRef.update(body) : dbRef.set(body)); created = true; saved = true; }
+    catch (e) { if (e?.code !== "unavailable") { dbRef = null; saved = false; } }
+  });
+  return saveChain;
+}
+
+// ---- running pairs
+let trials = [], idx = 0, practice = false, shownAt = 0, locked = true;
+const tileOf = (id, code) => (M.practice.some((p) => p.id === id) ? ["clean", "sharpen_mod", "noise_mod"] : M.tiles).indexOf(code);
+
+async function present() {
+  const list = practice ? practiceTrials : trials;
+  const x = list[idx];
+  locked = true;
+  $("stage").classList.add("blank");
+  $("L").classList.remove("picked"); $("R").classList.remove("picked");
+  const other = x.k === "i" ? "clean" : x.c;
+  const [left, right] = x.cl ? ["clean", other] : [other, "clean"];
+  await Promise.all([draw($("L").querySelector("canvas"), x.img, tileOf(x.img, left)),
+                     draw($("R").querySelector("canvas"), x.img, tileOf(x.img, right)),
+                     new Promise((r) => setTimeout(r, 300))]);
+  const n = list.length;
+  $("prog").textContent = `${idx + 1} / ${n}`;
+  $("bar").style.width = `${(idx / n) * 100}%`;
+  $("phase").textContent = practice ? "Practice" : "";
+  $("stage").classList.remove("blank");
+  shownAt = performance.now(); locked = false;
+  const nxt = list[idx + 1]; if (nxt) sprite(nxt.img);
+}
+
+function choose(side) {
+  if (locked || $("stage").hidden) return;
+  locked = true;
+  $(side).classList.add("picked");
+  const ms = Math.round(performance.now() - shownAt);
+  if (!practice) {
+    const x = trials[idx];
+    record.votes.push({ n: idx, k: x.k, img: x.img, c: x.c, cl: x.cl, pick: side, ms });
+    if (record.votes.length % 10 === 0) save(false);
+  }
+  setTimeout(next, 150);
+}
+
+function next() {
+  idx++;
+  if (practice && idx >= practiceTrials.length) {
+    practice = false; idx = 0;
+    return message("Practice done", "The real pairs start now. Your choices from here on are recorded.", "Start", () => { show("stage"); present(); });
+  }
+  if (!practice && idx === Math.floor(trials.length / 2) && !record.breakTaken) {
+    record.breakTaken = true; save(false);
+    return message("Halfway there", "Take a short break and rest your eyes. Continue when you are ready.", "Continue", () => { show("stage"); present(); });
+  }
+  if (!practice && idx >= trials.length) return finish();
+  present();
+}
+
+function message(title, text, btn, onClick) {
+  $("msgTitle").textContent = title; $("msgText").textContent = text; $("msgBtn").textContent = btn;
+  $("msgBtn").onclick = onClick; show("msg"); $("msgBtn").focus();
+}
+
+async function finish() {
+  record.finishedAt = new Date().toISOString();
+  show("done");
+  $("code").value = btoa(unescape(encodeURIComponent(JSON.stringify(record))));
+  await save(true);
+  if (saved) {
+    $("saveState").textContent = "Your answers are saved. You can close this page.";
+    $("saveState").className = "ok";
+  } else {
+    $("saveState").textContent = "Your answers could not be saved automatically. Please copy the code below and send it to the study team who shared this link.";
+    $("saveState").className = "note";
+    $("codeTitle").textContent = "Your response code";
+    $("codeHelp").textContent = "Copy this code and send it to the study team. Without it your answers are lost when you close the page.";
+  }
+}
+
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("code").value); $("copied").textContent = "Copied"; }
+  catch { $("code").select(); $("copied").textContent = "Selected: press Ctrl+C or Cmd+C to copy"; }
+});
+$("L").addEventListener("click", () => choose("L"));
+$("R").addEventListener("click", () => choose("R"));
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowLeft") { e.preventDefault(); choose("L"); }
+  if (e.key === "ArrowRight") { e.preventDefault(); choose("R"); }
+});
+
+let practiceTrials = [];
+const form = $("form");
+const ready = () => { $("start").disabled = !(M && form.checkValidity()); };
+form.addEventListener("input", ready); form.addEventListener("change", ready);
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!M || !form.checkValidity()) return;
+  record.meta = { age: $("age").value, screen: $("screen").value, expertise: $("expertise").value, vision: true };
+  record.display = { w: screen.width, h: screen.height, vw: innerWidth, vh: innerHeight, dpr: devicePixelRatio };
+  record.startedAt = new Date().toISOString();
+  trials = buildTrials();
+  practiceTrials = M.practice.map((p, i) => ({ img: p.id, c: i ? "noise_mod" : "sharpen_mod", cl: Math.random() < 0.5 }));
+  practice = true; idx = 0;
+  save(false);
+  show("stage"); present();
+});
+
+$("narrow").hidden = innerWidth >= 720;
+initDb();
+fetch("stimuli/manifest.json").then((r) => r.json()).then((m) => {
+  M = m;
+  [...M.practice, ...M.study.slice(0, 3)].forEach((s) => sprite(s.id));
+  $("loading").hidden = true; ready();
+}).catch(() => { $("loading").textContent = "The images failed to load. Reload the page to try again."; });
+</script>
