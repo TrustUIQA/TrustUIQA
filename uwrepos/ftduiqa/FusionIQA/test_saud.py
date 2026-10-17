@@ -1,0 +1,63 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import warnings
+warnings.filterwarnings("ignore")
+
+from torch.utils.data import DataLoader
+from torchvision import transforms
+from SAUDDataset import create_datasets
+import torch
+from scipy.stats import spearmanr, pearsonr
+import numpy as np
+from config import config
+import joblib
+from FusionIQA.model import FusionIQA
+
+if __name__ == "__main__":
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	# Define the transform
+	transform = transforms.Compose([
+			transforms.Resize((224, 224)),
+			transforms.ToTensor(),
+			transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) 
+	])
+
+	# Create datasets
+	train_dataset, val_dataset, test_dataset  = create_datasets(
+			annotations_file=config['annotations_file_saud'], 
+			image_dir=config['image_dir_saud'], 
+			test_size=0.2, 
+			val_size=0.1, 
+			transform=transform
+	)
+
+	test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=4)
+
+
+	model = FusionIQA(device)
+
+	print("Testing")
+	features, labels = model.extract_features(test_loader)
+
+	print("Linear Regression")
+	reg = joblib.load(config['trained_models']['LRFusionIQA_SAUD'])
+	predictions = reg.predict(features)
+	srocc, _ = spearmanr(labels, predictions)
+	plcc, _ = pearsonr(labels, predictions)
+	rmse = np.sqrt(np.mean((predictions - labels)**2))
+	print(f"SROCC: {srocc}, PLCC: {plcc}, RMSE: {rmse}")
+
+	print("SVR")
+	svr = joblib.load(config['trained_models']['SVRFusionIQA_SAUD'])
+	predictions = svr.predict(features)
+	srocc, _ = spearmanr(labels, predictions)
+	plcc, _ = pearsonr(labels, predictions)
+	rmse = np.sqrt(np.mean((predictions - labels)**2))
+	print(f"SROCC: {srocc}, PLCC: {plcc}, RMSE: {rmse}")
+
+
+
+
+
+	

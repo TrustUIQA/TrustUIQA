@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uwiqa"
+version = "0.1.0"
+description = "Detection-aware no-reference quality assessment for enhanced underwater images"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy", "scipy", "pandas", "opencv-python-headless", "scikit-image",
+  "pillow", "pyyaml", "tqdm", "matplotlib", "openpyxl",
+]
+
+[project.optional-dependencies]
+iqa = ["torch", "pyiqa>=0.1.16"]
+detect = ["ultralytics>=8.3"]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

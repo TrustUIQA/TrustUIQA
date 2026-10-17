@@ -23,17 +23,16 @@ Data (metric scores, result tables, study choices): https://huggingface.co/datas
 
 Download the Hugging Face dataset into the repository root. Its folders (`mos/`, `out*/`, `study/`) match the paths the scripts read. The raw study sessions and the Nano Banana token log are not released, so `study/choices.csv` (one row per choice, random rater ids) replaces the sessions.
 
-The images are not redistributed. Get UIEB, SAUD, SAUD2.0, UID2021 and SOTA from their authors, then run `mos/prep.py` to build the manifests and the scripts above to rebuild our edits, attacks and generated images.
+The dataset also holds the images:
+
+- `datasets/`: the four opinion-score sets as released by their authors (extract each into `uwdata/<set>/x/`, then run `mos/prep.py`), and the 90 UIEB photos we use (copy to `data/uieb/`)
+- `images/`: our simple edits, gradient attacks, iterated attacks, ablation, study images and every Nano Banana step
+
+Cite the original papers of UIEB, SAUD, SAUD2.0, UID2021 and SOTA when you use their images.
 
 ## Third-party code
 
-| Folder | Source license |
-|---|---|
-| `uwrepos/PSNR-SSIM-UCIQE-UIQM-Python` | MIT |
-| `uwrepos/UnderwaterRanker` | CC BY-NC 4.0 (images and examples removed) |
-| `uwrepos/RALI` | Apache 2.0 (code only, no checkpoints) |
-
-Each folder keeps its original LICENSE. The other metric code we ran (UCIQE MATLAB, PyFADE, CCF, FDUM, NMFC, UIQAVSI, QUIQ, Twice-Mixing and others) has no license or does not allow redistribution, so it is not included. Clone it from its authors into `uwrepos/` under the same folder names that `mos/uw_extra.py` uses.
+`uwrepos/` holds the metric code from other authors that we ran, unchanged, with each repository's LICENSE where its authors gave one. Files over 50 MB and PyTorch checkpoints (`.pth`, `.pt`, `.ckpt`, `.safetensors`, `.bin`) are not included. Get them from the original repositories.
 
 ## Contact
 

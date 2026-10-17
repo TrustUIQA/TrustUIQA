@@ -1,0 +1,15 @@
+data/*
+!data/README.md
+results/scores/
+results/stress/images/
+*.pt
+*.pth
+*.npy
+*.npz
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+runs/
+_uwiqa_check.png
+configs/local.yaml
