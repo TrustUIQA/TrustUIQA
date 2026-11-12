@@ -14,7 +14,7 @@ Data (metric scores, result tables, study choices): https://huggingface.co/datas
 | `score.py`, `uwmetrics.py`, `vqr1_score.py`, `fr_score.py` | Score images with 73 NR-IQA metrics (pyiqa plus underwater metrics) |
 | `attack.py`, `ablate.py`, `ablate_report.py`, `plot.py` | Iterated simple-edit attacks and the single-edit ablation |
 | `banana_*.py` | Repeated Nano Banana edits (Vertex AI) and the drift analysis |
-| `mos/` | Opinion-score sets: manifests (`prep.py`), scoring, within-scene kappa, simple edits, PGD attack, gMAD, flips and resizing, UCIQE implementations |
+| `mos/` | Opinion-score sets: manifests (`prep.py`), scoring, within-scene kappa, study within-edit kappa (`study_within_edit.py`), simple edits, PGD attack, gMAD, flips and resizing, UCIQE implementations |
 | `study/` | Paired-comparison study page (`rating.html`), stimuli lists, vote analysis |
 | `paper/iteration5/scripts/` | Builds every table and number in the paper from the CSVs |
 | `uwrepos/` | Code from other authors, unchanged, with their licenses |
