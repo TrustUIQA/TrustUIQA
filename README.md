@@ -5,6 +5,8 @@ Code for **Do Underwater Image Quality Metrics Agree with Human Perception? A Be
 Rishii Kumar Singh, Abhinav Rajput, Dinesh Kumar Vishwakarma
 Artificial Intelligence and Machine Learning Society (AIMS)
 
+Paper: https://arxiv.org/abs/2611.18429
+
 Data (metric scores, result tables, study choices): https://huggingface.co/datasets/TrustUIQA/TrustUIQA
 
 ## Layout
@@ -37,6 +39,20 @@ Cite the original papers of UIEB, SAUD, SAUD2.0, UID2021 and SOTA when you use t
 ## License
 
 Our code (everything outside `uwrepos/`) is released under the MIT License, see `LICENSE`. Each folder in `uwrepos/` keeps the terms of its original authors. The data on Hugging Face has its own license, see its dataset card.
+
+## Citation
+
+```bibtex
+@misc{singh2026underwaterimagequalitymetrics,
+  title         = {Do Underwater Image Quality Metrics Agree with Human Perception? A Benchmark with Human Choices, Simple Edits and Generative Drift},
+  author        = {Rishii Kumar Singh and Abhinav Rajput and Dinesh Kumar Vishwakarma},
+  year          = {2026},
+  eprint        = {2611.18429},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  url           = {https://arxiv.org/abs/2611.18429}
+}
+```
 
 ## Contact
 
